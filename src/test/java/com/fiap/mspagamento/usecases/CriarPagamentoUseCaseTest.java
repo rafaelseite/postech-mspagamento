@@ -1,7 +1,6 @@
 package com.fiap.mspagamento.usecases;
 
 import com.fiap.mspagamento.dto.PagamentoRequest;
-import com.fiap.mspagamento.dto.PagamentoResponse;
 import com.fiap.mspagamento.interfaces.PagamentoGateway;
 import com.fiap.mspagamento.valueobjects.Pagamento;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
@@ -29,31 +28,27 @@ class CriarPagamentoUseCaseTest {
     @Test
     void deveCriarPagamentoComSucesso() {
         PagamentoRequest request = new PagamentoRequest();
-        request.setPedidoId(UUID.randomUUID());
-        request.setSku("PROD123");
-        request.setQuantidade(3);
+        UUID pedidoId = UUID.randomUUID();
+        request.setPedidoId(pedidoId);
         request.setNumeroCartao("12345678901");
         request.setValor(new BigDecimal("150.00"));
 
-        when(gateway.salvar(any(Pagamento.class))).thenAnswer(invocation -> {
-            Pagamento p = invocation.getArgument(0);
-            return new Pagamento(
-                    UUID.randomUUID(),
-                    p.getPedidoId(),
-                    p.getSku(),
-                    p.getQuantidade(),
-                    p.getNumeroCartao(),
-                    p.getValor(),
-                    p.getStatus(),
-                    LocalDateTime.now()
-            );
-        });
+        Pagamento pagamentoCriado = new Pagamento(
+                UUID.randomUUID(),
+                pedidoId,
+                "12345678901",
+                new BigDecimal("150.00"),
+                StatusPagamento.PENDENTE,
+                LocalDateTime.now()
+        );
 
-        PagamentoResponse response = useCase.executar(request);
+        when(gateway.salvar(any())).thenReturn(pagamentoCriado);
 
-        assertNotNull(response);
-        assertEquals(request.getPedidoId(), response.pedidoId());
-        assertEquals(request.getValor(), response.valor());
-        assertEquals(StatusPagamento.PENDENTE.name(), response.status());
+        Pagamento resultado = useCase.executar(request);
+
+        assertNotNull(resultado);
+        assertEquals(pedidoId, resultado.getPedidoId());
+        assertEquals(StatusPagamento.PENDENTE, resultado.getStatus());
+        verify(gateway).salvar(any());
     }
 }

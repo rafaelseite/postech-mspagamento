@@ -2,8 +2,9 @@ package com.fiap.mspagamento.usecases;
 
 import com.fiap.mspagamento.dto.PagamentoResponse;
 import com.fiap.mspagamento.exception.PagamentoNaoEncontradoException;
-import com.fiap.mspagamento.external.EstoqueServiceClient;
+import com.fiap.mspagamento.external.PedidoServiceClient;
 import com.fiap.mspagamento.interfaces.PagamentoGateway;
+import com.fiap.mspagamento.interfaces.PagamentoMapper;
 import com.fiap.mspagamento.valueobjects.Pagamento;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,29 +21,30 @@ import static org.mockito.Mockito.*;
 class RealizarPagamentoUseCaseTest {
 
     private PagamentoGateway gateway;
-    private EstoqueServiceClient estoqueServiceClient;
+    private PedidoServiceClient pedidoServiceClient;
     private RealizarPagamentoUseCase useCase;
 
     @BeforeEach
     void setUp() {
         gateway = mock(PagamentoGateway.class);
-        estoqueServiceClient = mock(EstoqueServiceClient.class);
-        useCase = new RealizarPagamentoUseCase(gateway, estoqueServiceClient);
+        pedidoServiceClient = mock(PedidoServiceClient.class);
+        useCase = new RealizarPagamentoUseCase(gateway, pedidoServiceClient);
     }
 
     @Test
-    void deveProcessarPagamentoComSucesso() {
+    void deveProcessarPagamentoComSucessoEAtualizarPedido() {
         UUID id = UUID.randomUUID();
+        UUID pedidoId = UUID.randomUUID();
+
         Pagamento pagamento = new Pagamento(
-                id,
                 UUID.randomUUID(),
-                "SKU123",
-                2,
-                "12345678901",
+                UUID.randomUUID(),
+                "12345678902",
                 new BigDecimal("100.00"),
                 StatusPagamento.PENDENTE,
                 LocalDateTime.now()
         );
+
 
         when(gateway.buscarPorId(id)).thenReturn(Optional.of(pagamento));
         when(gateway.salvar(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -51,20 +53,19 @@ class RealizarPagamentoUseCaseTest {
 
         assertNotNull(response);
         assertEquals(StatusPagamento.SUCESSO.name(), response.status());
-        verify(gateway).salvar(any());
-        verifyNoInteractions(estoqueServiceClient);
+        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId.toString()), eq("PROCESSADO_SUCESSO"));
     }
 
     @Test
-    void deveReporEstoqueSePagamentoFalhar() {
+    void deveAtualizarPedidoComFalhaSePagamentoFalhar() {
         UUID id = UUID.randomUUID();
+        UUID pedidoId = UUID.randomUUID();
+
         Pagamento pagamento = new Pagamento(
                 id,
-                UUID.randomUUID(),
-                "SKU456",
-                5,
-                "12345678909",
-                new BigDecimal("50.00"),
+                pedidoId,
+                "99999999992", // termina com 2 => falha cartão
+                new BigDecimal("200.00"),
                 StatusPagamento.PENDENTE,
                 LocalDateTime.now()
         );
@@ -75,8 +76,8 @@ class RealizarPagamentoUseCaseTest {
         PagamentoResponse response = useCase.executar(id);
 
         assertNotNull(response);
-        assertNotEquals(StatusPagamento.SUCESSO.name(), response.status());
-        verify(estoqueServiceClient).devolverEstoque("SKU456", 5);
+        assertEquals(StatusPagamento.FALHA_CARTAO.name(), response.status());
+        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId.toString()), eq("PROCESSADO_SEM_CREDITO"));
     }
 
     @Test
@@ -85,5 +86,6 @@ class RealizarPagamentoUseCaseTest {
         when(gateway.buscarPorId(id)).thenReturn(Optional.empty());
 
         assertThrows(PagamentoNaoEncontradoException.class, () -> useCase.executar(id));
+        verify(pedidoServiceClient, never()).atualizarStatusPedido(any(), any());
     }
 }
