@@ -14,8 +14,6 @@ public class PagamentoMapper {
         return new Pagamento(
                 entity.getId(),
                 entity.getPedidoId(),
-                entity.getSku(),
-                entity.getQuantidade(),
                 entity.getNumeroCartao(),
                 entity.getValor(),
                 StatusPagamento.valueOf(entity.getStatus()),
@@ -27,8 +25,6 @@ public class PagamentoMapper {
         PagamentoEntity entity = new PagamentoEntity();
         entity.setId(pagamento.getId());
         entity.setPedidoId(pagamento.getPedidoId());
-        entity.setSku(pagamento.getSku());
-        entity.setQuantidade(pagamento.getQuantidade());
         entity.setNumeroCartao(pagamento.getNumeroCartao());
         entity.setValor(pagamento.getValor());
         entity.setStatus(pagamento.getStatus().name());
@@ -40,8 +36,6 @@ public class PagamentoMapper {
         return new Pagamento(
                 null,
                 request.getPedidoId(),
-                request.getSku(),
-                request.getQuantidade(),
                 request.getNumeroCartao(),
                 request.getValor(),
                 StatusPagamento.PENDENTE,

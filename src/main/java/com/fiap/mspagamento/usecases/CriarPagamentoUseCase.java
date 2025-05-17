@@ -1,14 +1,11 @@
 package com.fiap.mspagamento.usecases;
 
 import com.fiap.mspagamento.dto.PagamentoRequest;
-import com.fiap.mspagamento.dto.PagamentoResponse;
 import com.fiap.mspagamento.interfaces.PagamentoGateway;
 import com.fiap.mspagamento.interfaces.PagamentoMapper;
 import com.fiap.mspagamento.valueobjects.Pagamento;
-import com.fiap.mspagamento.valueobjects.StatusPagamento;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -20,11 +17,17 @@ public class CriarPagamentoUseCase {
         this.gateway = gateway;
     }
 
-    public PagamentoResponse executar(PagamentoRequest request) {
+    public Pagamento executar(PagamentoRequest request) {
         Pagamento pagamento = PagamentoMapper.toValueObject(request);
-        Pagamento salvo = gateway.salvar(pagamento);
-        return PagamentoMapper.toResponse(salvo);
+        pagamento = new Pagamento(
+                UUID.randomUUID(),
+                pagamento.getPedidoId(),
+                pagamento.getNumeroCartao(),
+                pagamento.getValor(),
+                pagamento.getStatus(),
+                pagamento.getCriadoEm()
+        );
+
+        return gateway.salvar(pagamento);
     }
-
-
 }

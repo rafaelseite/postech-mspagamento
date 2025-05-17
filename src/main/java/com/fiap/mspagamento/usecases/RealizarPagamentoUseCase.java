@@ -1,9 +1,8 @@
 package com.fiap.mspagamento.usecases;
 
 import com.fiap.mspagamento.dto.PagamentoResponse;
-import com.fiap.mspagamento.exception.FalhaAoReporEstoqueException;
 import com.fiap.mspagamento.exception.PagamentoNaoEncontradoException;
-import com.fiap.mspagamento.external.EstoqueServiceClient;
+import com.fiap.mspagamento.external.PedidoServiceClient;
 import com.fiap.mspagamento.interfaces.PagamentoGateway;
 import com.fiap.mspagamento.interfaces.PagamentoMapper;
 import com.fiap.mspagamento.valueobjects.Pagamento;
@@ -16,11 +15,11 @@ import java.util.UUID;
 public class RealizarPagamentoUseCase {
 
     private final PagamentoGateway gateway;
-    private final EstoqueServiceClient estoqueServiceClient;
+    private final PedidoServiceClient pedidoServiceClient;
 
-    public RealizarPagamentoUseCase(PagamentoGateway gateway, EstoqueServiceClient estoqueServiceClient) {
+    public RealizarPagamentoUseCase(PagamentoGateway gateway, PedidoServiceClient pedidoServiceClient) {
         this.gateway = gateway;
-        this.estoqueServiceClient = estoqueServiceClient;
+        this.pedidoServiceClient = pedidoServiceClient;
     }
 
     public PagamentoResponse executar(UUID idPagamento) {
@@ -30,15 +29,17 @@ public class RealizarPagamentoUseCase {
         StatusPagamento status = processarCartao(pagamento.getNumeroCartao());
         pagamento.setStatus(status);
 
-        if (status != StatusPagamento.SUCESSO) {
-            try {
-                estoqueServiceClient.devolverEstoque(pagamento.getSku(), pagamento.getQuantidade());
-            } catch (Exception e) {
-                throw new FalhaAoReporEstoqueException(pagamento.getSku());
-            }
-        }
-
         Pagamento atualizado = gateway.salvar(pagamento);
+
+        // Notifica o serviço de pedido com status apropriado
+        String statusPedido = switch (status) {
+            case SUCESSO -> "PROCESSADO_SUCESSO";
+            case FALHA_CARTAO -> "PROCESSADO_SEM_CREDITO";
+            default -> "PROCESSADO_ERRO";
+        };
+
+        pedidoServiceClient.atualizarStatusPedido(pagamento.getPedidoId(), statusPedido);
+
         return PagamentoMapper.toResponse(atualizado);
     }
 

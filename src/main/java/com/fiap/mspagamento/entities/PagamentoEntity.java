@@ -15,12 +15,6 @@ public class PagamentoEntity {
     @Column(name = "pedido_id", nullable = false)
     private UUID pedidoId;
 
-    @Column(name = "sku", nullable = false)
-    private String sku;
-
-    @Column(name = "quantidade", nullable = false)
-    private int quantidade;
-
     @Column(name = "numero_cartao", nullable = false)
     private String numeroCartao;
 
@@ -33,18 +27,12 @@ public class PagamentoEntity {
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 
-
+    // Getters e Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
     public UUID getPedidoId() { return pedidoId; }
     public void setPedidoId(UUID pedidoId) { this.pedidoId = pedidoId; }
-
-    public String getSku() { return sku; }
-    public void setSku(String sku) { this.sku = sku; }
-
-    public int getQuantidade() { return quantidade; }
-    public void setQuantidade(int quantidade) { this.quantidade = quantidade; }
 
     public String getNumeroCartao() { return numeroCartao; }
     public void setNumeroCartao(String numeroCartao) { this.numeroCartao = numeroCartao; }

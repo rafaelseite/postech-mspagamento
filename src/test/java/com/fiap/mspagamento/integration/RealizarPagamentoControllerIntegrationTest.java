@@ -1,35 +1,28 @@
 package com.fiap.mspagamento.integration;
 
-import com.fiap.mspagamento.dto.PagamentoRequest;
 import com.fiap.mspagamento.entities.PagamentoEntity;
 import com.fiap.mspagamento.gateways.database.jpa.PagamentoRepository;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fiap.mspagamento.dto.PagamentoResponse;
+import com.fiap.mspagamento.external.PedidoServiceClient;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.fiap.mspagamento.external.EstoqueServiceClient;
-import com.fiap.mspagamento.dto.PagamentoResponse;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.profiles.active=test"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RealizarPagamentoControllerIntegrationTest {
 
     @LocalServerPort
@@ -42,10 +35,10 @@ class RealizarPagamentoControllerIntegrationTest {
     private PagamentoRepository repository;
 
     @MockBean
-    private EstoqueServiceClient estoqueServiceClient;
+    private PedidoServiceClient pedidoServiceClient;
 
-    private UUID pedidoId;
     private UUID pagamentoId;
+    private UUID pedidoId;
 
     @BeforeEach
     void setUp() {
@@ -55,8 +48,8 @@ class RealizarPagamentoControllerIntegrationTest {
         PagamentoEntity entity = new PagamentoEntity();
         entity.setId(pagamentoId);
         entity.setPedidoId(pedidoId);
-        entity.setNumeroCartao("99999999992"); // termina com 2 => falha_cartao
-        entity.setValor(new BigDecimal("99.99"));
+        entity.setNumeroCartao("99999999992");
+        entity.setValor(new BigDecimal("199.99"));
         entity.setStatus(StatusPagamento.PENDENTE.name());
         entity.setCriadoEm(LocalDateTime.now());
 
@@ -64,7 +57,7 @@ class RealizarPagamentoControllerIntegrationTest {
     }
 
     @Test
-    void deveProcessarPagamentoEPossivelmenteNotificarEstoque() {
+    void deveProcessarPagamentoEChamarPedido() {
         String url = "http://localhost:" + port + "/pagamentos/" + pagamentoId + "/processar";
 
         HttpHeaders headers = new HttpHeaders();
@@ -72,25 +65,15 @@ class RealizarPagamentoControllerIntegrationTest {
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
         ResponseEntity<PagamentoResponse> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                request,
-                PagamentoResponse.class
+                url, HttpMethod.POST, request, PagamentoResponse.class
         );
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-
         PagamentoResponse body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.id()).isEqualTo(pagamentoId);
 
-        if (body.status().equals(StatusPagamento.FALHA_CARTAO.name()) ||
-                body.status().equals(StatusPagamento.FALHA_OUTROS.name()) ||
-                body.status().equals(StatusPagamento.FALHA_SISTEMA.name())) {
-
-            verify(estoqueServiceClient, times(1)).devolverEstoque(pedidoId.toString());
-        } else {
-            verify(estoqueServiceClient, never()).devolverEstoque(any());
-        }
+        verify(pedidoServiceClient, times(1))
+                .atualizarStatusPedido(eq(pedidoId), anyString());
     }
 }
