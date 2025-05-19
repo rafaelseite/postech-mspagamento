@@ -31,7 +31,7 @@ class CriarPagamentoUseCaseTest {
         UUID pedidoId = UUID.randomUUID();
         request.setPedidoId(pedidoId);
         request.setNumeroCartao("12345678901");
-        request.setValor(new BigDecimal("150.00"));
+        request.setValorTotal(new BigDecimal("150.00"));
 
         Pagamento pagamentoCriado = new Pagamento(
                 UUID.randomUUID(),

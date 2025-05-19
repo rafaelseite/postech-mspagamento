@@ -46,7 +46,7 @@ class PagamentoControllerTest {
         request = new PagamentoRequest();
         request.setPedidoId(UUID.randomUUID());
         request.setNumeroCartao("12345678901");
-        request.setValor(new BigDecimal("150.00"));
+        request.setValorTotal(new BigDecimal("150.00"));
     }
 
     @Test
@@ -55,7 +55,7 @@ class PagamentoControllerTest {
                 UUID.randomUUID(),
                 request.getPedidoId(),
                 request.getNumeroCartao(),
-                request.getValor(),
+                request.getValorTotal(),
                 StatusPagamento.PENDENTE,
                 LocalDateTime.now()
         );

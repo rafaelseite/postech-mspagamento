@@ -5,13 +5,13 @@ import com.fiap.mspagamento.dto.PagamentoResponse;
 import com.fiap.mspagamento.entities.PagamentoEntity;
 import com.fiap.mspagamento.gateways.database.jpa.PagamentoRepository;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fiap.mspagamento.external.PedidoServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 
@@ -21,8 +21,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-
-import com.fiap.mspagamento.external.PedidoServiceClient;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RealizarPagamentoControllerIntegrationTest {
@@ -50,8 +48,8 @@ class RealizarPagamentoControllerIntegrationTest {
         PagamentoEntity entity = new PagamentoEntity();
         entity.setId(pagamentoId);
         entity.setPedidoId(pedidoId);
-        entity.setNumeroCartao("12345678902"); // termina com 2 (simula falha)
-        entity.setValor(new BigDecimal("150.00"));
+        entity.setNumeroCartao("12345678902"); // termina com 2 => SEM_CREDITO
+        entity.setValorTotal(new BigDecimal("99.99"));
         entity.setStatus(StatusPagamento.PENDENTE.name());
         entity.setCriadoEm(LocalDateTime.now());
 
@@ -59,7 +57,7 @@ class RealizarPagamentoControllerIntegrationTest {
     }
 
     @Test
-    void deveProcessarPagamentoEAtualizarPedido() {
+    void deveProcessarEPedirAtualizacaoDoPedido() {
         String url = "http://localhost:" + port + "/pagamentos/" + pagamentoId + "/processar";
 
         HttpHeaders headers = new HttpHeaders();
@@ -78,7 +76,6 @@ class RealizarPagamentoControllerIntegrationTest {
         assertThat(body).isNotNull();
         assertThat(body.id()).isEqualTo(pagamentoId);
 
-        // Verifica que o serviço de pedido foi chamado
-        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), any());
+        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SEM_CREDITO"));
     }
 }

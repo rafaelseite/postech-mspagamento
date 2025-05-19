@@ -35,7 +35,7 @@ public class PagamentoGatewayImpl implements PagamentoGateway {
         entity.setId(pagamento.getId());
         entity.setPedidoId(pagamento.getPedidoId());
         entity.setNumeroCartao(pagamento.getNumeroCartao());
-        entity.setValor(pagamento.getValor());
+        entity.setValorTotal(pagamento.getValorTotal());
         entity.setStatus(pagamento.getStatus().name());
         entity.setCriadoEm(pagamento.getCriadoEm());
         return entity;
@@ -46,7 +46,7 @@ public class PagamentoGatewayImpl implements PagamentoGateway {
                 entity.getId(),
                 entity.getPedidoId(),
                 entity.getNumeroCartao(),
-                entity.getValor(),
+                entity.getValorTotal(),
                 StatusPagamento.valueOf(entity.getStatus()),
                 entity.getCriadoEm()
         );

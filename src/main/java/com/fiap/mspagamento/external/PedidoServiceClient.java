@@ -13,7 +13,11 @@ import java.util.UUID;
 @Component
 public class PedidoServiceClient {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    public PedidoServiceClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public void atualizarStatusPedido(UUID pedidoId, String status) {
         String url = "http://localhost:8083/api/atualizacao-pagamento";
@@ -29,3 +33,4 @@ public class PedidoServiceClient {
         restTemplate.postForEntity(url, request, Void.class);
     }
 }
+

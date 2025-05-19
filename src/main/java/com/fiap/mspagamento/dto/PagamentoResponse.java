@@ -9,15 +9,18 @@ import java.util.UUID;
 public record PagamentoResponse(
         UUID id,
         UUID pedidoId,
-        BigDecimal valor,
+        BigDecimal valorTotal,
         String status,
         LocalDateTime criadoEm
-) {
+)
+
+{
+
     public static PagamentoResponse fromEntity(Pagamento pagamento) {
         return new PagamentoResponse(
                 pagamento.getId(),
                 pagamento.getPedidoId(),
-                pagamento.getValor(),
+                pagamento.getValorTotal(),
                 pagamento.getStatus().name(),
                 pagamento.getCriadoEm()
         );

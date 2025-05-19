@@ -2,6 +2,8 @@ package com.fiap.mspagamento.controller;
 
 import com.fiap.mspagamento.dto.PagamentoRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fiap.mspagamento.usecases.BuscarPagamentoUseCase;
+import com.fiap.mspagamento.usecases.RealizarPagamentoUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,6 +26,11 @@ class PagamentoControllerValidationTest {
 
     @MockBean
     private CriarPagamentoUseCase criarPagamentoUseCase;
+
+    @MockBean
+    private RealizarPagamentoUseCase realizarPagamentoUseCase;
+
+
 
     @Test
     void deveRetornarBadRequestQuandoRequestInvalido() throws Exception {

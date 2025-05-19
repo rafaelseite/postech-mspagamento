@@ -19,7 +19,7 @@ public class PagamentoEntity {
     private String numeroCartao;
 
     @Column(nullable = false)
-    private BigDecimal valor;
+    private BigDecimal valorTotal;
 
     @Column(nullable = false)
     private String status;
@@ -37,8 +37,8 @@ public class PagamentoEntity {
     public String getNumeroCartao() { return numeroCartao; }
     public void setNumeroCartao(String numeroCartao) { this.numeroCartao = numeroCartao; }
 
-    public BigDecimal getValor() { return valor; }
-    public void setValor(BigDecimal valor) { this.valor = valor; }
+    public BigDecimal getValorTotal() { return valorTotal; }
+    public void setValorTotal(BigDecimal valorTotal) { this.valorTotal = valorTotal; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

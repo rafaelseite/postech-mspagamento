@@ -4,7 +4,6 @@ import com.fiap.mspagamento.dto.PagamentoResponse;
 import com.fiap.mspagamento.exception.PagamentoNaoEncontradoException;
 import com.fiap.mspagamento.external.PedidoServiceClient;
 import com.fiap.mspagamento.interfaces.PagamentoGateway;
-import com.fiap.mspagamento.interfaces.PagamentoMapper;
 import com.fiap.mspagamento.valueobjects.Pagamento;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,19 +31,10 @@ class RealizarPagamentoUseCaseTest {
     }
 
     @Test
-    void deveProcessarPagamentoComSucessoEAtualizarPedido() {
+    void deveProcessarPagamentoComSucesso() {
         UUID id = UUID.randomUUID();
         UUID pedidoId = UUID.randomUUID();
-
-        Pagamento pagamento = new Pagamento(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "12345678902",
-                new BigDecimal("100.00"),
-                StatusPagamento.PENDENTE,
-                LocalDateTime.now()
-        );
-
+        Pagamento pagamento = new Pagamento(id, pedidoId, "12345678901", new BigDecimal("100.00"), StatusPagamento.PENDENTE, LocalDateTime.now());
 
         when(gateway.buscarPorId(id)).thenReturn(Optional.of(pagamento));
         when(gateway.salvar(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -53,31 +43,40 @@ class RealizarPagamentoUseCaseTest {
 
         assertNotNull(response);
         assertEquals(StatusPagamento.SUCESSO.name(), response.status());
-        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId.toString()), eq("PROCESSADO_SUCESSO"));
+        //assertEquals("PROCESSADO_SUCESSO", response.status());
+        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SUCESSO"));
     }
 
     @Test
-    void deveAtualizarPedidoComFalhaSePagamentoFalhar() {
+    void deveProcessarPagamentoSemCredito() {
         UUID id = UUID.randomUUID();
         UUID pedidoId = UUID.randomUUID();
-
-        Pagamento pagamento = new Pagamento(
-                id,
-                pedidoId,
-                "99999999992", // termina com 2 => falha cartão
-                new BigDecimal("200.00"),
-                StatusPagamento.PENDENTE,
-                LocalDateTime.now()
-        );
+        Pagamento pagamento = new Pagamento(id, pedidoId, "12345678902", new BigDecimal("80.00"), StatusPagamento.PENDENTE, LocalDateTime.now());
 
         when(gateway.buscarPorId(id)).thenReturn(Optional.of(pagamento));
         when(gateway.salvar(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         PagamentoResponse response = useCase.executar(id);
 
-        assertNotNull(response);
         assertEquals(StatusPagamento.FALHA_CARTAO.name(), response.status());
-        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId.toString()), eq("PROCESSADO_SEM_CREDITO"));
+        //assertEquals("PROCESSADO_SEM_CREDITO", response.status());
+        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SEM_CREDITO"));
+    }
+
+    @Test
+    void deveProcessarPagamentoComErroGenerico() {
+        UUID id = UUID.randomUUID();
+        UUID pedidoId = UUID.randomUUID();
+        Pagamento pagamento = new Pagamento(id, pedidoId, "12345678900", new BigDecimal("50.00"), StatusPagamento.PENDENTE, LocalDateTime.now());
+
+        when(gateway.buscarPorId(id)).thenReturn(Optional.of(pagamento));
+        when(gateway.salvar(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PagamentoResponse response = useCase.executar(id);
+
+        assertEquals(StatusPagamento.FALHA_OUTROS.name(), response.status());
+        //assertEquals("PROCESSADO_ERRO", response.status());
+        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_ERRO"));
     }
 
     @Test
@@ -86,6 +85,6 @@ class RealizarPagamentoUseCaseTest {
         when(gateway.buscarPorId(id)).thenReturn(Optional.empty());
 
         assertThrows(PagamentoNaoEncontradoException.class, () -> useCase.executar(id));
-        verify(pedidoServiceClient, never()).atualizarStatusPedido(any(), any());
+        verifyNoInteractions(pedidoServiceClient);
     }
 }

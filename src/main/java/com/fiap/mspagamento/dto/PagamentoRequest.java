@@ -14,7 +14,7 @@ public class PagamentoRequest {
 
     @NotNull(message = "Valor é obrigatório")
     @DecimalMin(value = "0.01", message = "Valor deve ser positivo")
-    private BigDecimal valor;
+    private BigDecimal valorTotal;
 
     public UUID getPedidoId() { return pedidoId; }
     public void setPedidoId(UUID pedidoId) { this.pedidoId = pedidoId; }
@@ -22,6 +22,6 @@ public class PagamentoRequest {
     public String getNumeroCartao() { return numeroCartao; }
     public void setNumeroCartao(String numeroCartao) { this.numeroCartao = numeroCartao; }
 
-    public BigDecimal getValor() { return valor; }
-    public void setValor(BigDecimal valor) { this.valor = valor; }
+    public BigDecimal getValorTotal() { return valorTotal; }
+    public void setValorTotal(BigDecimal valorTotal) { this.valorTotal = valorTotal; }
 }

@@ -9,15 +9,15 @@ public class Pagamento {
     private UUID id;
     private UUID pedidoId;
     private String numeroCartao;
-    private BigDecimal valor;
+    private BigDecimal valorTotal;
     private StatusPagamento status;
     private LocalDateTime criadoEm;
 
-    public Pagamento(UUID id, UUID pedidoId, String numeroCartao, BigDecimal valor, StatusPagamento status, LocalDateTime criadoEm) {
+    public Pagamento(UUID id, UUID pedidoId, String numeroCartao, BigDecimal Total, StatusPagamento status, LocalDateTime criadoEm) {
         this.id = id;
         this.pedidoId = pedidoId;
         this.numeroCartao = numeroCartao;
-        this.valor = valor;
+        this.valorTotal = valorTotal;
         this.status = status;
         this.criadoEm = criadoEm;
     }
@@ -25,7 +25,7 @@ public class Pagamento {
     public UUID getId() { return id; }
     public UUID getPedidoId() { return pedidoId; }
     public String getNumeroCartao() { return numeroCartao; }
-    public BigDecimal getValor() { return valor; }
+    public BigDecimal getValorTotal() { return valorTotal; }
     public StatusPagamento getStatus() { return status; }
     public LocalDateTime getCriadoEm() { return criadoEm; }
 

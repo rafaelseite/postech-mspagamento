@@ -15,7 +15,7 @@ public class PagamentoMapper {
                 entity.getId(),
                 entity.getPedidoId(),
                 entity.getNumeroCartao(),
-                entity.getValor(),
+                entity.getValorTotal(),
                 StatusPagamento.valueOf(entity.getStatus()),
                 entity.getCriadoEm()
         );
@@ -26,7 +26,7 @@ public class PagamentoMapper {
         entity.setId(pagamento.getId());
         entity.setPedidoId(pagamento.getPedidoId());
         entity.setNumeroCartao(pagamento.getNumeroCartao());
-        entity.setValor(pagamento.getValor());
+        entity.setValorTotal(pagamento.getValorTotal());
         entity.setStatus(pagamento.getStatus().name());
         entity.setCriadoEm(pagamento.getCriadoEm());
         return entity;
@@ -37,19 +37,37 @@ public class PagamentoMapper {
                 null,
                 request.getPedidoId(),
                 request.getNumeroCartao(),
-                request.getValor(),
+                request.getValorTotal(),
                 StatusPagamento.PENDENTE,
                 LocalDateTime.now()
         );
     }
 
+
+    public static PagamentoResponse toResponse(Pagamento pagamento) {
+        String statusPedido = switch (pagamento.getStatus()) {
+            case SUCESSO -> "PROCESSADO_SUCESSO";
+            case FALHA_CARTAO -> "PROCESSADO_SEM_CREDITO";
+            default -> "PROCESSADO_ERRO";
+        };
+
+        return new PagamentoResponse(
+                pagamento.getId(),
+                pagamento.getPedidoId(),
+                pagamento.getValorTotal(),
+                statusPedido,
+                pagamento.getCriadoEm()
+        );
+    }
+
+/*
     public static PagamentoResponse toResponse(Pagamento pagamento) {
         return new PagamentoResponse(
                 pagamento.getId(),
                 pagamento.getPedidoId(),
-                pagamento.getValor(),
+                pagamento.getValorTotal(),
                 pagamento.getStatus().name(),
                 pagamento.getCriadoEm()
         );
-    }
+    }*/
 }

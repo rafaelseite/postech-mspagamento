@@ -23,7 +23,7 @@ public class CriarPagamentoUseCase {
                 UUID.randomUUID(),
                 pagamento.getPedidoId(),
                 pagamento.getNumeroCartao(),
-                pagamento.getValor(),
+                pagamento.getValorTotal(),
                 pagamento.getStatus(),
                 pagamento.getCriadoEm()
         );

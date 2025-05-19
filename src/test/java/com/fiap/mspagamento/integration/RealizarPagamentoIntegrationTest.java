@@ -3,13 +3,16 @@ package com.fiap.mspagamento.integration;
 import com.fiap.mspagamento.entities.PagamentoEntity;
 import com.fiap.mspagamento.gateways.database.jpa.PagamentoRepository;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
-import com.fiap.mspagamento.external.EstoqueServiceClient;
+import com.fiap.mspagamento.dto.PagamentoResponse;
+import com.fiap.mspagamento.external.PedidoServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,26 +21,34 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(properties = {"spring.profiles.active=test"})
-class RealizarPagamentoIntegrationTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class RealizarPagamentoIntegrationTest {
+
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     @Autowired
     private PagamentoRepository repository;
 
     @MockBean
-    private EstoqueServiceClient estoqueServiceClient;
+    private PedidoServiceClient pedidoServiceClient;
 
     private UUID pedidoId;
+    private UUID pagamentoId;
 
     @BeforeEach
     void setUp() {
         pedidoId = UUID.randomUUID();
+        pagamentoId = UUID.randomUUID();
 
         PagamentoEntity entity = new PagamentoEntity();
-        entity.setId(UUID.randomUUID());
+        entity.setId(pagamentoId);
         entity.setPedidoId(pedidoId);
-        entity.setNumeroCartao("99999999992"); // termina com 2 → erro
-        entity.setValor(new BigDecimal("150.00"));
+        entity.setNumeroCartao("99999999992"); 
+        entity.setValorTotal(new BigDecimal("99.99"));
         entity.setStatus(StatusPagamento.PENDENTE.name());
         entity.setCriadoEm(LocalDateTime.now());
 
@@ -45,18 +56,26 @@ class RealizarPagamentoIntegrationTest {
     }
 
     @Test
-    void deveDevolverEstoqueQuandoPagamentoFalhar() {
-        var pagamento = repository.findAll().get(0);
+    void deveRealizarPagamentoEFazerCallbackParaPedido() {
+        String url = "http://localhost:" + port + "/pagamentos/" + pagamentoId + "/processar";
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        pagamento.setStatus(StatusPagamento.FALHA_CARTAO.name());
-        repository.save(pagamento);
+        ResponseEntity<PagamentoResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                request,
+                PagamentoResponse.class
+        );
 
-        estoqueServiceClient.devolverEstoque(pagamento.getPedidoId().toString());
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
-        verify(estoqueServiceClient, times(1)).devolverEstoque(pagamento.getPedidoId().toString());
+        PagamentoResponse body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.id()).isEqualTo(pagamentoId);
 
-        var atualizado = repository.findById(pagamento.getId()).orElseThrow();
-        assertThat(atualizado.getStatus()).isEqualTo(StatusPagamento.FALHA_CARTAO.name());
+        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SEM_CREDITO"));
     }
 }

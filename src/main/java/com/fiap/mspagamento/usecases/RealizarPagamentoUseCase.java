@@ -31,7 +31,6 @@ public class RealizarPagamentoUseCase {
 
         Pagamento atualizado = gateway.salvar(pagamento);
 
-        // Notifica o serviço de pedido com status apropriado
         String statusPedido = switch (status) {
             case SUCESSO -> "PROCESSADO_SUCESSO";
             case FALHA_CARTAO -> "PROCESSADO_SEM_CREDITO";
