@@ -6,8 +6,6 @@ import com.fiap.mspagamento.interfaces.PagamentoMapper;
 import com.fiap.mspagamento.valueobjects.Pagamento;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
 public class CriarPagamentoUseCase {
 
@@ -19,15 +17,6 @@ public class CriarPagamentoUseCase {
 
     public Pagamento executar(PagamentoRequest request) {
         Pagamento pagamento = PagamentoMapper.toValueObject(request);
-        pagamento = new Pagamento(
-                UUID.randomUUID(),
-                pagamento.getPedidoId(),
-                pagamento.getNumeroCartao(),
-                pagamento.getValorTotal(),
-                pagamento.getStatus(),
-                pagamento.getCriadoEm()
-        );
-
         return gateway.salvar(pagamento);
     }
 }

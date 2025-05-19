@@ -13,7 +13,7 @@ public class Pagamento {
     private StatusPagamento status;
     private LocalDateTime criadoEm;
 
-    public Pagamento(UUID id, UUID pedidoId, String numeroCartao, BigDecimal Total, StatusPagamento status, LocalDateTime criadoEm) {
+    public Pagamento(UUID id, UUID pedidoId, String numeroCartao, BigDecimal valorTotal, StatusPagamento status, LocalDateTime criadoEm) {
         this.id = id;
         this.pedidoId = pedidoId;
         this.numeroCartao = numeroCartao;

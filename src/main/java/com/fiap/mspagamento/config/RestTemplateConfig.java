@@ -1,4 +1,4 @@
-package com.fiap.mspagamento.config;
+/*package com.fiap.mspagamento.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,3 +12,5 @@ public class RestTemplateConfig {
         return new RestTemplate();
     }
 }
+}
+ */

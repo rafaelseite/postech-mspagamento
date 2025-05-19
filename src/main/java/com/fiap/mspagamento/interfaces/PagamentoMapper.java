@@ -7,6 +7,7 @@ import com.fiap.mspagamento.valueobjects.Pagamento;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class PagamentoMapper {
 
@@ -34,7 +35,7 @@ public class PagamentoMapper {
 
     public static Pagamento toValueObject(PagamentoRequest request) {
         return new Pagamento(
-                null,
+                UUID.randomUUID(),
                 request.getPedidoId(),
                 request.getNumeroCartao(),
                 request.getValorTotal(),
@@ -42,6 +43,7 @@ public class PagamentoMapper {
                 LocalDateTime.now()
         );
     }
+
 
 
     public static PagamentoResponse toResponse(Pagamento pagamento) {

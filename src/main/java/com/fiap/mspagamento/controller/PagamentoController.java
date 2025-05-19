@@ -25,9 +25,21 @@ public class PagamentoController {
 
     @PostMapping
     public ResponseEntity<PagamentoResponse> criar(@Valid @RequestBody PagamentoRequest request) {
+        try {
+            var pagamento = criarPagamentoUseCase.executar(request);
+            return ResponseEntity.ok(PagamentoMapper.toResponse(pagamento));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
+    /*@PostMapping
+    public ResponseEntity<PagamentoResponse> criar(@Valid @RequestBody PagamentoRequest request) {
         var pagamento = criarPagamentoUseCase.executar(request);
         return ResponseEntity.ok(PagamentoMapper.toResponse(pagamento));
-    }
+    }*/
 
     @PostMapping("/{id}/processar")
     public ResponseEntity<PagamentoResponse> processar(@PathVariable UUID id) {

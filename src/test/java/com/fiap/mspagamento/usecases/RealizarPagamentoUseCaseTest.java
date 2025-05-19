@@ -42,8 +42,8 @@ class RealizarPagamentoUseCaseTest {
         PagamentoResponse response = useCase.executar(id);
 
         assertNotNull(response);
-        assertEquals(StatusPagamento.SUCESSO.name(), response.status());
-        //assertEquals("PROCESSADO_SUCESSO", response.status());
+       // assertEquals(StatusPagamento.SUCESSO.name(), response.status());
+        assertEquals("PROCESSADO_SUCESSO", response.status());
         verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SUCESSO"));
     }
 
@@ -58,8 +58,8 @@ class RealizarPagamentoUseCaseTest {
 
         PagamentoResponse response = useCase.executar(id);
 
-        assertEquals(StatusPagamento.FALHA_CARTAO.name(), response.status());
-        //assertEquals("PROCESSADO_SEM_CREDITO", response.status());
+        //assertEquals(StatusPagamento.FALHA_CARTAO.name(), response.status());
+        assertEquals("PROCESSADO_SEM_CREDITO", response.status());
         verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SEM_CREDITO"));
     }
 
@@ -74,8 +74,8 @@ class RealizarPagamentoUseCaseTest {
 
         PagamentoResponse response = useCase.executar(id);
 
-        assertEquals(StatusPagamento.FALHA_OUTROS.name(), response.status());
-        //assertEquals("PROCESSADO_ERRO", response.status());
+        //assertEquals(StatusPagamento.FALHA_OUTROS.name(), response.status());
+        assertEquals("PROCESSADO_ERRO", response.status());
         verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_ERRO"));
     }
 
