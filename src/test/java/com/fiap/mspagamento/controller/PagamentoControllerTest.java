@@ -87,6 +87,36 @@ class PagamentoControllerTest {
     }
 
     @Test
+    void deveProcessarPagamentoComSucesso() throws Exception {
+        when(realizarPagamentoUseCase.executar(pagamentoId)).thenReturn(pagamentoResponse);
+
+        mockMvc.perform(post("/pagamentos/" + pagamentoId + "/processar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(pagamentoResponse.id().toString()))
+                .andExpect(jsonPath("$.status").value(pagamentoResponse.status()));
+    }
+
+    @Test
+    void deveRetornarErro500AoCriarPagamentoQuandoOcorreExcecao() throws Exception {
+        when(criarPagamentoUseCase.executar(any())).thenThrow(new RuntimeException("Erro interno"));
+
+        mockMvc.perform(post("/pagamentos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void deveRetornar404QuandoPagamentoNaoEncontrado() throws Exception {
+        when(buscarPagamentoUseCase.buscarPorId(pagamentoId)).thenThrow(new RuntimeException("Não encontrado"));
+
+        mockMvc.perform(get("/pagamentos/" + pagamentoId))
+                .andExpect(status().isNotFound());
+    }
+
+
+
+    @Test
     void deveBuscarPagamentoPorIdComSucesso() throws Exception {
         when(buscarPagamentoUseCase.buscarPorId(pagamentoId)).thenReturn(pagamentoResponse);
 
