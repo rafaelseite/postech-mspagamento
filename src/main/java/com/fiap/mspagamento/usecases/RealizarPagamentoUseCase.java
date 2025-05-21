@@ -31,11 +31,7 @@ public class RealizarPagamentoUseCase {
 
         Pagamento atualizado = gateway.salvar(pagamento);
 
-        String statusPedido = switch (status) {
-            case SUCESSO -> "PROCESSADO_SUCESSO";
-            case FALHA_CARTAO -> "PROCESSADO_SEM_CREDITO";
-            default -> "PROCESSADO_ERRO";
-        };
+        String statusPedido = mapearStatusParaPedido(status);
 
         pedidoServiceClient.atualizarStatusPedido(pagamento.getPedidoId(), statusPedido);
 
@@ -46,5 +42,13 @@ public class RealizarPagamentoUseCase {
         if (numeroCartao.endsWith("1")) return StatusPagamento.SUCESSO;
         if (numeroCartao.endsWith("2")) return StatusPagamento.FALHA_CARTAO;
         return StatusPagamento.FALHA_OUTROS;
+    }
+
+    private String mapearStatusParaPedido(StatusPagamento status) {
+        return switch (status) {
+            case SUCESSO -> "PROCESSADO_SUCESSO";
+            case FALHA_CARTAO -> "PROCESSADO_SEM_CREDITO";
+            default -> "PROCESSADO_ERRO";
+        };
     }
 }

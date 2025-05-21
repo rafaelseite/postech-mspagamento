@@ -17,12 +17,19 @@ public record PagamentoResponse(
 {
 
     public static PagamentoResponse fromEntity(Pagamento pagamento) {
+        String statusPedido = switch (pagamento.getStatus()) {
+            case SUCESSO -> "PROCESSADO_SUCESSO";
+            case FALHA_CARTAO -> "PROCESSADO_SEM_CREDITO";
+            default -> "PROCESSADO_ERRO";
+        };
+
         return new PagamentoResponse(
                 pagamento.getId(),
                 pagamento.getPedidoId(),
                 pagamento.getValorTotal(),
-                pagamento.getStatus().name(),
+                statusPedido,
                 pagamento.getCriadoEm()
         );
     }
+
 }

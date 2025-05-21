@@ -8,6 +8,7 @@ import com.fiap.mspagamento.valueobjects.Pagamento;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -41,10 +42,29 @@ class RealizarPagamentoUseCaseTest {
 
         PagamentoResponse response = useCase.executar(id);
 
+        ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
+        ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
+        verify(pedidoServiceClient).atualizarStatusPedido(idCaptor.capture(), statusCaptor.capture());
+
+        System.out.println("[SUCESSO] ID enviado: " + idCaptor.getValue());
+        System.out.println("[SUCESSO] Status enviado: " + statusCaptor.getValue());
+
         assertNotNull(response);
-       // assertEquals(StatusPagamento.SUCESSO.name(), response.status());
-        assertEquals("PROCESSADO_SUCESSO", response.status());
-        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SUCESSO"));
+        assertEquals("PROCESSADO_SUCESSO", statusCaptor.getValue());
+    }
+
+    @Test
+    void deveMapearStatusCorretamenteParaPagamentoResponse() {
+        UUID id = UUID.randomUUID();
+        UUID pedidoId = UUID.randomUUID();
+
+        Pagamento sucesso = new Pagamento(id, pedidoId, "12345678901", new BigDecimal("100.00"), StatusPagamento.SUCESSO, LocalDateTime.now());
+        Pagamento falhaCartao = new Pagamento(id, pedidoId, "12345678902", new BigDecimal("100.00"), StatusPagamento.FALHA_CARTAO, LocalDateTime.now());
+        Pagamento falhaOutros = new Pagamento(id, pedidoId, "12345678900", new BigDecimal("100.00"), StatusPagamento.FALHA_OUTROS, LocalDateTime.now());
+
+        assertEquals("PROCESSADO_SUCESSO", PagamentoResponse.fromEntity(sucesso).status());
+        assertEquals("PROCESSADO_SEM_CREDITO", PagamentoResponse.fromEntity(falhaCartao).status());
+        assertEquals("PROCESSADO_ERRO", PagamentoResponse.fromEntity(falhaOutros).status());
     }
 
     @Test
@@ -58,9 +78,14 @@ class RealizarPagamentoUseCaseTest {
 
         PagamentoResponse response = useCase.executar(id);
 
-        //assertEquals(StatusPagamento.FALHA_CARTAO.name(), response.status());
-        assertEquals("PROCESSADO_SEM_CREDITO", response.status());
-        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_SEM_CREDITO"));
+        ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
+        ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
+        verify(pedidoServiceClient).atualizarStatusPedido(idCaptor.capture(), statusCaptor.capture());
+
+        System.out.println("[SEM_CREDITO] ID enviado: " + idCaptor.getValue());
+        System.out.println("[SEM_CREDITO] Status enviado: " + statusCaptor.getValue());
+
+        assertEquals("PROCESSADO_SEM_CREDITO", statusCaptor.getValue());
     }
 
     @Test
@@ -74,9 +99,14 @@ class RealizarPagamentoUseCaseTest {
 
         PagamentoResponse response = useCase.executar(id);
 
-        //assertEquals(StatusPagamento.FALHA_OUTROS.name(), response.status());
-        assertEquals("PROCESSADO_ERRO", response.status());
-        verify(pedidoServiceClient).atualizarStatusPedido(eq(pedidoId), eq("PROCESSADO_ERRO"));
+        ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
+        ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
+        verify(pedidoServiceClient).atualizarStatusPedido(idCaptor.capture(), statusCaptor.capture());
+
+        System.out.println("[ERRO] ID enviado: " + idCaptor.getValue());
+        System.out.println("[ERRO] Status enviado: " + statusCaptor.getValue());
+
+        assertEquals("PROCESSADO_ERRO", statusCaptor.getValue());
     }
 
     @Test

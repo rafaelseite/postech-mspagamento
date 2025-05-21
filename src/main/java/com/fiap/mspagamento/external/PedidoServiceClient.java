@@ -24,7 +24,7 @@ public class PedidoServiceClient {
 
         Map<String, Object> body = new HashMap<>();
         body.put("pedidoId", pedidoId);
-        body.put("status", status);
+        body.put("statusPagamento", status);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
