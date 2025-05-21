@@ -20,7 +20,7 @@ public class PedidoServiceClient {
     }
 
     public void atualizarStatusPedido(UUID pedidoId, String status) {
-        String url = "${pedido.service.url}";
+        String url = "http://mspedido:8083/api/atualizacao-pagamento";
 
         Map<String, Object> body = new HashMap<>();
         body.put("pedidoId", pedidoId);
