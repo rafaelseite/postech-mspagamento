@@ -90,5 +90,3 @@ mvn test "-Dspring.profiles.active=test"
 ## 🔄 Integrações
 
 - `PedidoServiceClient`: responsável por comunicar o status do pagamento para `mspedido`
-
-> Projeto desenvolvido como parte do Tech Challenge 4 da Pós-Tech FIAP
