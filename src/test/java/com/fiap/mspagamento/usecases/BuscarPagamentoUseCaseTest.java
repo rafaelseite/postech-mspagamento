@@ -1,7 +1,10 @@
 package com.fiap.mspagamento.usecases;
 
-import com.fiap.mspagamento.valueobjects.Pagamento;
+import com.fiap.mspagamento.dto.PagamentoResponse;
+import com.fiap.mspagamento.exception.PagamentoNaoEncontradoException;
 import com.fiap.mspagamento.interfaces.PagamentoGateway;
+import com.fiap.mspagamento.interfaces.PagamentoMapper;
+import com.fiap.mspagamento.valueobjects.Pagamento;
 import com.fiap.mspagamento.valueobjects.StatusPagamento;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,29 +29,29 @@ class BuscarPagamentoUseCaseTest {
     }
 
     @Test
-    void deveRetornarPagamentoQuandoExistir() {
+    void deveRetornarPagamentoResponseQuandoExistir() {
         UUID id = UUID.randomUUID();
-        Pagamento pagamento = new Pagamento(id, UUID.randomUUID(), "12345678901", new BigDecimal("100"), StatusPagamento.SUCESSO, LocalDateTime.now());
+        Pagamento pagamento = new Pagamento(id, UUID.randomUUID(), "12345678901", new BigDecimal("100.00"), StatusPagamento.SUCESSO, LocalDateTime.now());
 
         when(gateway.buscarPorId(id)).thenReturn(Optional.of(pagamento));
 
-        Optional<Pagamento> resultado = useCase.buscarPorId(id);
+        PagamentoResponse response = useCase.buscarPorId(id);
 
-        assertTrue(resultado.isPresent());
-        assertEquals(pagamento, resultado.get());
+        assertNotNull(response);
+        assertEquals(pagamento.getId(), response.id());
+        assertEquals(pagamento.getPedidoId(), response.pedidoId());
+        assertEquals(pagamento.getValorTotal(), response.valorTotal());
 
         verify(gateway).buscarPorId(id);
     }
 
     @Test
-    void deveRetornarVazioQuandoNaoExistirPagamento() {
+    void deveLancarExcecaoQuandoPagamentoNaoExistir() {
         UUID id = UUID.randomUUID();
 
         when(gateway.buscarPorId(id)).thenReturn(Optional.empty());
 
-        Optional<Pagamento> resultado = useCase.buscarPorId(id);
-
-        assertTrue(resultado.isEmpty());
+        assertThrows(PagamentoNaoEncontradoException.class, () -> useCase.buscarPorId(id));
 
         verify(gateway).buscarPorId(id);
     }

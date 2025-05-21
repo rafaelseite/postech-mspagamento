@@ -30,6 +30,9 @@ class PagamentoControllerValidationTest {
     @MockBean
     private RealizarPagamentoUseCase realizarPagamentoUseCase;
 
+    @MockBean
+    private BuscarPagamentoUseCase buscarPagamentoUseCase;
+
 
 
     @Test

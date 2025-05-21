@@ -3,6 +3,7 @@ package com.fiap.mspagamento.controller;
 import com.fiap.mspagamento.dto.PagamentoRequest;
 import com.fiap.mspagamento.dto.PagamentoResponse;
 import com.fiap.mspagamento.interfaces.PagamentoMapper;
+import com.fiap.mspagamento.usecases.BuscarPagamentoUseCase;
 import com.fiap.mspagamento.usecases.CriarPagamentoUseCase;
 import com.fiap.mspagamento.usecases.RealizarPagamentoUseCase;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,12 @@ public class PagamentoController {
 
     private final CriarPagamentoUseCase criarPagamentoUseCase;
     private final RealizarPagamentoUseCase realizarPagamentoUseCase;
+    private final BuscarPagamentoUseCase buscarPagamentoUseCase;
 
-    public PagamentoController(CriarPagamentoUseCase criarPagamentoUseCase, RealizarPagamentoUseCase realizarPagamentoUseCase) {
+    public PagamentoController(CriarPagamentoUseCase criarPagamentoUseCase, RealizarPagamentoUseCase realizarPagamentoUseCase, BuscarPagamentoUseCase buscarPagamentoUseCase) {
         this.criarPagamentoUseCase = criarPagamentoUseCase;
         this.realizarPagamentoUseCase = realizarPagamentoUseCase;
+        this.buscarPagamentoUseCase = buscarPagamentoUseCase;
     }
 
     @PostMapping
@@ -40,6 +43,19 @@ public class PagamentoController {
         var pagamento = criarPagamentoUseCase.executar(request);
         return ResponseEntity.ok(PagamentoMapper.toResponse(pagamento));
     }*/
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PagamentoResponse> buscar(@PathVariable UUID id) {
+        try {
+            PagamentoResponse response = buscarPagamentoUseCase.buscarPorId(id);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+
 
     @PostMapping("/{id}/processar")
     public ResponseEntity<PagamentoResponse> processar(@PathVariable UUID id) {
