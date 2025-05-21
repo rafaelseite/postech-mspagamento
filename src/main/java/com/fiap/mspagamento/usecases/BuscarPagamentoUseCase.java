@@ -17,12 +17,13 @@ public class BuscarPagamentoUseCase {
         this.gateway = gateway;
     }
 
-   /* public PagamentoResponse buscarPorId(UUID id) {
+   public PagamentoResponse buscarPorId(UUID id) {
         return gateway.buscarPorId(id)
                 .map(PagamentoMapper::toResponse)
                 .orElseThrow(() -> new PagamentoNaoEncontradoException(id));
-    }*/
+    }
 
+    /*
     public PagamentoResponse buscarPorId(UUID id) {
         return gateway.buscarPorId(id)
                 .map(p -> {
@@ -30,6 +31,6 @@ public class BuscarPagamentoUseCase {
                     return PagamentoMapper.toResponse(p);
                 })
                 .orElseThrow(() -> new PagamentoNaoEncontradoException(id));
-    }
+    }*/
 
 }
